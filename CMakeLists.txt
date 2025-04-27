@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 4.0.1)
 
 project(FibonacciHeap)
 
