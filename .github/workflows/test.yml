@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake g++ ninja-build
