@@ -1,7 +1,5 @@
 project(tests)
 
-enable_testing()
-
 add_executable(${PROJECT_NAME} 
     main.cxx
 )
