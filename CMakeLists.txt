@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.31.6)
 
-project(FibonacciHeap)
+project(fibonacci_heap)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(tests)
+add_subdirectory(test)
