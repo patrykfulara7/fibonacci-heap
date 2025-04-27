@@ -1,8 +1,9 @@
-name: C++ Build and Google Test
+name: Run Google Tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -10,21 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y ninja-build g++ cmake
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake g++ ninja-build
 
-      - name: Configure and Build with CMake
-        uses: lukka/run-cmake@v10
-        with:
-          cmakeListsOrSettingsJson: "CMakeListsTxtAdvanced"
-          buildDirectory: "build"
-          cmakeBuildType: "Release"
-          cmakeGenerator: "Ninja"
-          cmakeBuildDirectory: "build"
-          cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
+      - name: Configure CMake
+        run: cmake -S . -B build -G Ninja
 
-      - name: Run Tests
-        run: ctest --test-dir build --output-on-failure
+      - name: Build
+        run: cmake --build build
+
+      - name: Run tests
+        run: ctest --test-dir build
