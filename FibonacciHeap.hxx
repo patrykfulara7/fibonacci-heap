@@ -7,9 +7,6 @@
 #include <vector>
 
 template <typename T>
-class FibonacciHeap;
-
-template <typename T>
 struct Node {
     T value;
     Node<T> *parent { nullptr };

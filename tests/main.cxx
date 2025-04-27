@@ -39,6 +39,8 @@ TEST(FibonacciHeap, Insert) {
 TEST(FibonacciHeap, DeleteMin) {
     FibonacciHeap<int> heap;
 
+    EXPECT_THROW(heap.DeleteMin(), std::runtime_error);
+
     heap.Insert(3);
     heap.Insert(4);
     heap.Insert(1);
