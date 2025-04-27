@@ -66,3 +66,8 @@ TEST(FibonacciHeap, DecreaseKey) {
     heap.DecreaseKey(nodes[6], 1);
     EXPECT_EQ(heap.FindMin(), 1);
 }
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
