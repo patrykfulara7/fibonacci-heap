@@ -1,7 +1,7 @@
 project(tests)
 
 add_executable(${PROJECT_NAME} 
-    main.cxx
+    FibonacciHeap.test.cxx
 )
 
 target_link_libraries(${PROJECT_NAME}

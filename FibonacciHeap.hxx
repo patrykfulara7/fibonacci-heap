@@ -10,7 +10,7 @@ template <typename T>
 struct Node {
     T value;
     Node<T> *parent { nullptr };
-    Node<T> *previous { nullptr };
+    Node<T> *prev { nullptr };
     Node<T> *next { nullptr };
     Node<T> *children { nullptr };
     std::size_t degree { 0 };
@@ -44,17 +44,17 @@ class FibonacciHeap {
         Node<T> *newNode = new Node<T>(std::forward<T>(value));
 
         if (degree == 0) {
-            newNode->previous = newNode;
+            newNode->prev = newNode;
             newNode->next = newNode;
 
             roots = newNode;
             min = newNode;
         } else {
-            newNode->previous = roots->previous;
+            newNode->prev = roots->prev;
             newNode->next = roots;
 
-            roots->previous->next = newNode;
-            roots->previous = newNode;
+            roots->prev->next = newNode;
+            roots->prev = newNode;
 
             if (value < min->value) {
                 min = newNode;
@@ -77,28 +77,24 @@ class FibonacciHeap {
                 min->children = min->children->next;
             }
 
-            min->children->previous->next = roots;
-            roots->previous->next = min->children;
-            std::swap(min->children->previous, roots->previous);
+            min->children->prev->next = roots;
+            roots->prev->next = min->children;
+            std::swap(min->children->prev, roots->prev);
 
             degree += min->degree;
         }
 
         if (degree == 1) {
             delete min;
-
             roots = nullptr;
             min = nullptr;
             degree = 0;
         } else {
-            if (roots == min) {
-                roots = roots->next;
-            }
+            roots = min->next;
 
-            min->previous->next = min->next;
-            min->next->previous = min->previous;
+            min->prev->next = min->next;
+            min->next->prev = min->prev;
             delete min;
-
             degree--;
 
             std::size_t maxDegree = std::floor(std::log2(degree)) + 1;
@@ -114,16 +110,16 @@ class FibonacciHeap {
                     }
 
                     if (current->degree == 0) {
-                        other->previous = other;
+                        other->prev = other;
                         other->next = other;
 
                         current->children = other;
                     } else {
-                        other->previous = current->children->previous;
+                        other->prev = current->children->prev;
                         other->next = current->children;
 
-                        current->children->previous->next = other;
-                        current->children->previous = other;
+                        current->children->prev->next = other;
+                        current->children->prev = other;
                     }
 
                     other->parent = current;
@@ -138,17 +134,14 @@ class FibonacciHeap {
             for (Node<T> *node : degrees) {
                 if (node != nullptr) {
                     if (degree == 0) {
-                        node->previous = node;
-                        node->next = node;
-
+                        node->prev = node;
                         roots = node;
                         min = node;
                     } else {
-                        node->previous = roots->previous;
-                        node->next = roots;
+                        node->prev = roots->prev;
 
-                        roots->previous->next = node;
-                        roots->previous = node;
+                        roots->prev->next = node;
+                        roots->prev = node;
 
                         if (node->value < min->value) {
                             min = node;
@@ -158,6 +151,8 @@ class FibonacciHeap {
                     degree++;
                 }
             }
+
+            roots->prev->next = roots;
         }
     }
 
@@ -185,11 +180,11 @@ class FibonacciHeap {
 
             current = parent;
 
-            current->previous = roots->previous;
+            current->prev = roots->prev;
             current->next = roots;
 
-            roots->previous->next = current;
-            roots->previous = current;
+            roots->prev->next = current;
+            roots->prev = current;
 
             current->marked = false;
             degree++;
