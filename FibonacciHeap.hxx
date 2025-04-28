@@ -10,8 +10,8 @@ template <typename T>
 struct Node {
     T value;
     Node<T> *parent { nullptr };
-    Node<T> *prev { nullptr };
-    Node<T> *next { nullptr };
+    Node<T> *prev { this };
+    Node<T> *next { this };
     Node<T> *children { nullptr };
     std::size_t degree { 0 };
     bool marked { false };
@@ -27,12 +27,29 @@ class FibonacciHeap {
     Node<T> *min = { nullptr };
     std::size_t degree { 0 };
 
+  private:
+    void Remove(Node<T> *node) {
+        for (; node->degree > 0; node->degree--) {
+            Remove(node->children);
+            node->children = node->children->next;
+        }
+
+        delete min;
+    }
+
   public:
+    ~FibonacciHeap() {
+        for (; roots->degree > 0; roots->degree--) {
+            Remove(roots->children);
+            roots->children = roots->children->next;
+        }
+    }
+
     bool Empty() const {
         return degree == 0;
     }
 
-    T &FindMin() const {
+    T &Top() const {
         if (degree == 0) {
             throw std::runtime_error("Heap is empty");
         }
@@ -40,13 +57,10 @@ class FibonacciHeap {
         return min->value;
     }
 
-    Node<T> *Insert(T &&value) {
+    Node<T> *Push(T &&value) {
         Node<T> *newNode = new Node<T>(std::forward<T>(value));
 
         if (degree == 0) {
-            newNode->prev = newNode;
-            newNode->next = newNode;
-
             roots = newNode;
             min = newNode;
         } else {
@@ -66,7 +80,7 @@ class FibonacciHeap {
         return newNode;
     }
 
-    void DeleteMin() {
+    void Pop() {
         if (degree == 0) {
             throw std::runtime_error("Heap is empty");
         }
@@ -156,7 +170,7 @@ class FibonacciHeap {
         }
     }
 
-    void DecreaseKey(Node<T> *node, T &&value) {
+    void Update(Node<T> *node, T &&value) {
         node->value = std::forward<T>(value);
 
         Node<T> *current = node;
