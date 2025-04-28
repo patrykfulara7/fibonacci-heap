@@ -44,6 +44,10 @@ class FibonacciHeap {
     }
 
     void Pop() {
+        for (Node &child : min->children) {
+            child.parent = roots.end();
+        }
+
         roots.splice(roots.end(), min->children);
         roots.erase(min);
 
@@ -52,8 +56,9 @@ class FibonacciHeap {
         for (NodeIterator current = roots.begin(); current != roots.end();) {
             NodeIterator next = std::next(current);
 
-            while (degrees[current->children.size()] != roots.end()) {
-                NodeIterator other = degrees[current->children.size()];
+            std::size_t degree = current->children.size();
+            for (; degrees[degree] != roots.end(); degree++) {
+                NodeIterator other = degrees[degree];
                 if (other->value < current->value) {
                     std::swap(other, current);
                 }
@@ -65,10 +70,10 @@ class FibonacciHeap {
                 }
 
                 other->parent = current;
-                degrees[current->children.size() - 1] = roots.end();
+                degrees[degree] = roots.end();
             }
 
-            degrees[current->children.size()] = current;
+            degrees[degree] = current;
             current = next;
         }
 

@@ -49,7 +49,8 @@ TEST(FibonacciHeap, Pop) {
 TEST(FibonacciHeap, Update) {
     FibonacciHeap<int> heap;
 
-    std::vector<FibonacciHeap<int>::NodeIterator> nodes;
+    using NodeIterator = FibonacciHeap<int>::NodeIterator;
+    std::vector<NodeIterator> nodes;
     for (std::size_t i = 1; i <= 8; i++) {
         nodes.push_back(heap.Push(i));
     }
