@@ -1,207 +1,111 @@
 #pragma once
 
 #include <cmath>
-#include <cstddef>
-#include <stdexcept>
-#include <utility>
+#include <list>
 #include <vector>
 
 template <typename T>
-struct Node {
-    T value;
-    Node<T> *parent { nullptr };
-    Node<T> *prev { this };
-    Node<T> *next { this };
-    Node<T> *children { nullptr };
-    std::size_t degree { 0 };
-    bool marked { false };
-
-    Node(T value) : value(value) {
-    }
-};
-
-template <typename T>
 class FibonacciHeap {
-  private:
-    Node<T> *roots { nullptr };
-    Node<T> *min = { nullptr };
-    std::size_t degree { 0 };
-
-  private:
-    void Remove(Node<T> *node) {
-        for (; node->degree > 0; node->degree--) {
-            Remove(node->children);
-            node->children = node->children->next;
-        }
-
-        delete min;
-    }
+    class Node;
 
   public:
-    ~FibonacciHeap() {
-        for (; roots->degree > 0; roots->degree--) {
-            Remove(roots->children);
-            roots->children = roots->children->next;
-        }
-    }
+    typedef typename std::list<Node>::iterator NodeIterator;
 
+  private:
+    struct Node {
+        T value;
+        NodeIterator parent;
+        std::list<Node> children {};
+        bool marked { false };
+
+        Node(T value, const NodeIterator &parent) : value(value), parent(parent) {
+        }
+    };
+
+    std::list<Node> roots {};
+    NodeIterator min { roots.end() };
+
+  public:
     bool Empty() const {
-        return degree == 0;
+        return roots.empty();
     }
 
     T &Top() const {
-        if (degree == 0) {
-            throw std::runtime_error("Heap is empty");
-        }
-
         return min->value;
     }
 
-    Node<T> *Push(T &&value) {
-        Node<T> *newNode = new Node<T>(std::forward<T>(value));
-
-        if (degree == 0) {
-            roots = newNode;
-            min = newNode;
-        } else {
-            newNode->prev = roots->prev;
-            newNode->next = roots;
-
-            roots->prev->next = newNode;
-            roots->prev = newNode;
-
-            if (value < min->value) {
-                min = newNode;
-            }
+    NodeIterator Push(T &&value) {
+        roots.emplace_back(std::forward<T>(value), roots.end());
+        if (min == roots.end() or value < min->value) {
+            min = std::prev(roots.end());
         }
 
-        degree++;
-
-        return newNode;
+        return std::prev(roots.end());
     }
 
     void Pop() {
-        if (degree == 0) {
-            throw std::runtime_error("Heap is empty");
-        }
+        roots.splice(roots.end(), min->children);
+        roots.erase(min);
 
-        if (min->degree > 0) {
-            for (; min->degree > 0; min->degree--) {
-                min->children->parent = nullptr;
-                min->children = min->children->next;
-            }
+        std::size_t maxDegree = std::floor(std::log2(roots.size())) + 1;
+        std::vector<NodeIterator> degrees(maxDegree, roots.end());
+        for (NodeIterator current = roots.begin(); current != roots.end();) {
+            NodeIterator next = std::next(current);
 
-            min->children->prev->next = roots;
-            roots->prev->next = min->children;
-            std::swap(min->children->prev, roots->prev);
-
-            degree += min->degree;
-        }
-
-        if (degree == 1) {
-            delete min;
-            roots = nullptr;
-            min = nullptr;
-            degree = 0;
-        } else {
-            roots = min->next;
-
-            min->prev->next = min->next;
-            min->next->prev = min->prev;
-            delete min;
-            degree--;
-
-            std::size_t maxDegree = std::floor(std::log2(degree)) + 1;
-            std::vector<Node<T> *> degrees(maxDegree, nullptr);
-            for (; degree > 0; degree--) {
-                Node<T> *current = roots;
-                roots = roots->next;
-
-                for (; degrees[current->degree] != nullptr; current->degree++) {
-                    Node<T> *other = degrees[current->degree];
-                    if (other->value < current->value) {
-                        std::swap(other, current);
-                    }
-
-                    if (current->degree == 0) {
-                        other->prev = other;
-                        other->next = other;
-
-                        current->children = other;
-                    } else {
-                        other->prev = current->children->prev;
-                        other->next = current->children;
-
-                        current->children->prev->next = other;
-                        current->children->prev = other;
-                    }
-
-                    other->parent = current;
-                    degrees[current->degree] = nullptr;
+            while (degrees[current->children.size()] != roots.end()) {
+                NodeIterator other = degrees[current->children.size()];
+                if (other->value < current->value) {
+                    std::swap(other, current);
                 }
 
-                degrees[current->degree] = current;
-            }
-
-            roots = nullptr;
-            min = nullptr;
-            for (Node<T> *node : degrees) {
-                if (node != nullptr) {
-                    if (degree == 0) {
-                        node->prev = node;
-                        roots = node;
-                        min = node;
-                    } else {
-                        node->prev = roots->prev;
-
-                        roots->prev->next = node;
-                        roots->prev = node;
-
-                        if (node->value < min->value) {
-                            min = node;
-                        }
-                    }
-
-                    degree++;
+                if (other->parent == roots.end()) {
+                    current->children.splice(current->children.end(), roots, other);
+                } else {
+                    current->children.splice(current->children.end(), other->parent->children, other);
                 }
+
+                other->parent = current;
+                degrees[current->children.size() - 1] = roots.end();
             }
 
-            roots->prev->next = roots;
+            degrees[current->children.size()] = current;
+            current = next;
+        }
+
+        min = roots.end();
+        for (NodeIterator &node : degrees) {
+            if (node != roots.end() and (min == roots.end() or node->value < min->value)) {
+                min = node;
+            }
         }
     }
 
-    void Update(Node<T> *node, T &&value) {
-        node->value = std::forward<T>(value);
+    void Update(NodeIterator &node, T &&value) {
+        if (value < node->value) {
+            NodeIterator current = node;
+            while (true) {
+                NodeIterator parent = node->parent;
+                if (parent == roots.end()) {
+                    break;
+                }
 
-        Node<T> *current = node;
-        while (true) {
-            if (current->value < min->value) {
-                min = current;
+                roots.splice(roots.end(), node->parent->children, node);
+                node->marked = false;
+                node->parent = roots.end();
+
+                if (not parent->marked) {
+                    parent->marked = true;
+                    break;
+                }
+
+                current = parent;
             }
 
-            Node<T> *parent = current->parent;
-            if (parent == nullptr) {
-                break;
+            if (value < min->value) {
+                min = node;
             }
-
-            current->parent = nullptr;
-            parent->degree--;
-
-            if (not parent->marked) {
-                parent->marked = true;
-                break;
-            }
-
-            current = parent;
-
-            current->prev = roots->prev;
-            current->next = roots;
-
-            roots->prev->next = current;
-            roots->prev = current;
-
-            current->marked = false;
-            degree++;
         }
+
+        node->value = std::forward<T>(value);
     }
 };
