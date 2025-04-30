@@ -35,12 +35,12 @@ class FibonacciHeap {
     }
 
     NodeIterator Push(T &&value) {
-        roots.emplace_back(std::forward<T>(value), roots.end());
+        NodeIterator it = roots.emplace_back(std::forward<T>(value), roots.end());
         if (min == roots.end() or value < min->value) {
-            min = std::prev(roots.end());
+            min = it;
         }
 
-        return std::prev(roots.end());
+        return it;
     }
 
     void Pop() {
