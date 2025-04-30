@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+#include <list>
+#include <stdexcept>
 
 #include "../FibonacciHeap.hxx"
 
@@ -13,6 +15,8 @@ TEST(FibonacciHeap, Empty) {
 
 TEST(FibonacciHeap, Top) {
     FibonacciHeap<int> heap;
+
+    EXPECT_THROW(heap.Top(), std::runtime_error);
 
     heap.Push(3);
     EXPECT_EQ(heap.Top(), 3);
@@ -35,6 +39,8 @@ TEST(FibonacciHeap, Push) {
 
 TEST(FibonacciHeap, Pop) {
     FibonacciHeap<int> heap;
+
+    EXPECT_THROW(heap.Pop(), std::runtime_error);
 
     heap.Push(3);
     heap.Push(4);

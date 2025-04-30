@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <list>
+#include <stdexcept>
 #include <vector>
 
 template <typename T>
@@ -31,6 +32,10 @@ class FibonacciHeap {
     }
 
     T &Top() const {
+        if (Empty()) {
+            throw std::runtime_error("Heap is empty");
+        }
+
         return min->value;
     }
 
@@ -44,6 +49,10 @@ class FibonacciHeap {
     }
 
     void Pop() {
+        if (Empty()) {
+            throw std::runtime_error("Heap is empty");
+        }
+
         for (Node &child : min->children) {
             child.parent = roots.end();
         }
@@ -57,13 +66,15 @@ class FibonacciHeap {
         }
 
         min = roots.begin();
+
         std::size_t maxDegree = std::floor(std::log2(roots.size())) + 1;
         std::vector<NodeIterator> nodes(maxDegree, roots.end());
-        for (NodeIterator it = roots.begin(); it != roots.end();) {
+        NodeIterator it = roots.begin();
+        do {
             NodeIterator current = it++;
 
             std::size_t degree = current->children.size();
-            for (; nodes[degree] != roots.end(); degree++) {
+            while (nodes[degree] != roots.end()) {
                 NodeIterator other = nodes[degree];
                 if (other->value < current->value) {
                     std::swap(other, current);
@@ -77,6 +88,8 @@ class FibonacciHeap {
 
                 other->parent = current;
                 nodes[degree] = roots.end();
+
+                degree++;
             }
 
             nodes[degree] = current;
@@ -84,7 +97,7 @@ class FibonacciHeap {
             if (current->value < min->value) {
                 min = current;
             }
-        }
+        } while (it != roots.end());
     }
 
     // TODO: Handle value greater than value being updated
