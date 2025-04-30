@@ -4,8 +4,8 @@
 ## ⚡ Performance
 | Operation      | find-min  | delete-min                                | decrease-key                          | insert                                |
 | -------------- | --------- | ----------------------------------------- | ------------------------------------- | ------------------------------------- |
-| Binary Heap    | Θ(1)      | Θ(log n)                                  | Θ(log n)                              | Θ(log n)                              |
-| Fibonacci Heap | Θ(1)      | O(log n) [am.](## "amortized complexity") | Θ(1) [am.](## "amortized complexity") | Θ(1) [am.](## "amortized complexity") |
+| Binary Heap    | O(1)      | O(log n)                                  | O(log n)                              | O(log n)                              |
+| Fibonacci Heap | O(1)      | O(log n) [am.](## "amortized complexity") | O(1) [am.](## "amortized complexity") | O(1) [am.](## "amortized complexity") |
 
 ##
 Thank you [SithDev](https://www.youtube.com/watch?v=6JxvKfSV9Ns) for inspiring me to implement a Fibonacci heap!
