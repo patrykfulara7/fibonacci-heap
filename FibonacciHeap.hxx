@@ -35,7 +35,7 @@ class FibonacciHeap {
     }
 
     NodeIterator Push(T &&value) {
-        NodeIterator it = roots.emplace_back(std::forward<T>(value), roots.end());
+        NodeIterator it = roots.emplace(roots.end(), std::forward<T>(value), roots.end());
         if (min == roots.end() or value < min->value) {
             min = it;
         }
@@ -90,24 +90,7 @@ class FibonacciHeap {
     // TODO: Handle value greater than value being updated
     void Update(NodeIterator &node, T &&value) {
         if (value < node->value) {
-            NodeIterator current = node;
-            while (true) {
-                NodeIterator parent = node->parent;
-                if (parent == roots.end()) {
-                    break;
-                }
-
-                roots.splice(roots.end(), node->parent->children, node);
-                node->marked = false;
-                node->parent = roots.end();
-
-                if (not parent->marked) {
-                    parent->marked = true;
-                    break;
-                }
-
-                current = parent;
-            }
+            Cut(node);
 
             if (value < min->value) {
                 min = node;
@@ -115,5 +98,23 @@ class FibonacciHeap {
         }
 
         node->value = std::forward<T>(value);
+    }
+
+  private:
+    void Cut(NodeIterator &node) {
+        NodeIterator parent = node->parent;
+        if (parent == roots.end()) {
+            return;
+        }
+
+        roots.splice(roots.end(), node->parent->children, node);
+        node->parent = roots.end();
+        node->marked = false;
+
+        if (not parent->marked) {
+            parent->marked = true;
+        } else {
+            Cut(parent);
+        }
     }
 };
