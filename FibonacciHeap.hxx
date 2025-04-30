@@ -51,14 +51,20 @@ class FibonacciHeap {
         roots.splice(roots.end(), min->children);
         roots.erase(min);
 
+        if (Empty()) {
+            min = roots.end();
+            return;
+        }
+
+        min = roots.begin();
         std::size_t maxDegree = std::floor(std::log2(roots.size())) + 1;
-        std::vector<NodeIterator> degrees(maxDegree, roots.end());
-        for (NodeIterator current = roots.begin(); current != roots.end();) {
-            NodeIterator next = std::next(current);
+        std::vector<NodeIterator> nodes(maxDegree, roots.end());
+        for (NodeIterator it = roots.begin(); it != roots.end();) {
+            NodeIterator current = it++;
 
             std::size_t degree = current->children.size();
-            for (; degrees[degree] != roots.end(); degree++) {
-                NodeIterator other = degrees[degree];
+            for (; nodes[degree] != roots.end(); degree++) {
+                NodeIterator other = nodes[degree];
                 if (other->value < current->value) {
                     std::swap(other, current);
                 }
@@ -70,21 +76,18 @@ class FibonacciHeap {
                 }
 
                 other->parent = current;
-                degrees[degree] = roots.end();
+                nodes[degree] = roots.end();
             }
 
-            degrees[degree] = current;
-            current = next;
-        }
+            nodes[degree] = current;
 
-        min = roots.end();
-        for (NodeIterator &node : degrees) {
-            if (node != roots.end() and (min == roots.end() or node->value < min->value)) {
-                min = node;
+            if (current->value < min->value) {
+                min = current;
             }
         }
     }
 
+    // TODO: Handle value greater than value being updated
     void Update(NodeIterator &node, T &&value) {
         if (value < node->value) {
             NodeIterator current = node;

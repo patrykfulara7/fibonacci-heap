@@ -56,6 +56,7 @@ TEST(FibonacciHeap, Update) {
     }
 
     heap.Pop();
+    std::cout << reinterpret_cast<void *>(&*nodes[0]) << std::endl;
     heap.Update(nodes[5], 3);
     EXPECT_EQ(heap.Top(), 2);
 
