@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <list>
+#include <numbers>
 #include <stdexcept>
 #include <vector>
 
@@ -19,7 +20,7 @@ class FibonacciHeap {
         std::list<Node> children {};
         bool marked { false };
 
-        Node(T value, const NodeIterator &parent) : value(value), parent(parent) {
+        Node(T value, NodeIterator parent) : value(value), parent(parent) {
         }
     };
 
@@ -53,22 +54,39 @@ class FibonacciHeap {
             throw std::runtime_error("Heap is empty");
         }
 
-        for (Node &child : min->children) {
-            child.parent = roots.end();
-        }
-
-        roots.splice(roots.end(), min->children);
+        AddChildrenToRootList(min);
         roots.erase(min);
 
         if (Empty()) {
             min = roots.end();
-            return;
+        } else {
+            Consolidate();
+        }
+    }
+
+    // TODO: Handle value greater than value being updated
+    void Update(NodeIterator node, T &&value) {
+        if (value < node->value) {
+            Decrease(node, std::forward<T>(value));
+        } else if (value > node->value) {
+            throw std::runtime_error("Value can't be inscreased");
+        }
+    }
+
+  private:
+    void AddChildrenToRootList(NodeIterator node) {
+        for (Node &child : node->children) {
+            child.parent = roots.end();
         }
 
-        min = roots.begin();
+        roots.splice(roots.end(), node->children);
+    }
 
-        std::size_t maxDegree = std::floor(std::log2(roots.size())) + 1;
-        std::vector<NodeIterator> nodes(maxDegree, roots.end());
+    void Consolidate() {
+        std::size_t maxDegree = std::floor(std::log(roots.size()) / std::log(std::numbers::phi)) + 1;
+        std::vector<NodeIterator> nodes(maxDegree + 1, roots.end());
+
+        min = roots.begin();
         NodeIterator it = roots.begin();
         do {
             NodeIterator current = it++;
@@ -80,15 +98,10 @@ class FibonacciHeap {
                     std::swap(other, current);
                 }
 
-                if (other->parent == roots.end()) {
-                    current->children.splice(current->children.end(), roots, other);
-                } else {
-                    current->children.splice(current->children.end(), other->parent->children, other);
-                }
-
+                current->children.splice(current->children.end(), roots, other);
                 other->parent = current;
-                nodes[degree] = roots.end();
 
+                nodes[degree] = roots.end();
                 degree++;
             }
 
@@ -100,10 +113,9 @@ class FibonacciHeap {
         } while (it != roots.end());
     }
 
-    // TODO: Handle value greater than value being updated
-    void Update(NodeIterator &node, T &&value) {
+    void Decrease(NodeIterator node, T &&value) {
         if (value < node->value) {
-            Cut(node);
+            CascadingCut(node);
 
             if (value < min->value) {
                 min = node;
@@ -113,21 +125,21 @@ class FibonacciHeap {
         node->value = std::forward<T>(value);
     }
 
-  private:
-    void Cut(NodeIterator &node) {
+    void CascadingCut(NodeIterator node) {
         NodeIterator parent = node->parent;
-        if (parent == roots.end()) {
-            return;
+        if (parent != roots.end()) {
+            if (not parent->marked) {
+                parent->marked = true;
+            } else {
+                Cut(node);
+                CascadingCut(parent);
+            }
         }
+    }
 
+    void Cut(NodeIterator node) {
         roots.splice(roots.end(), node->parent->children, node);
         node->parent = roots.end();
         node->marked = false;
-
-        if (not parent->marked) {
-            parent->marked = true;
-        } else {
-            Cut(parent);
-        }
     }
 };

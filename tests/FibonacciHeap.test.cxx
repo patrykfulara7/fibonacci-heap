@@ -32,7 +32,11 @@ TEST(FibonacciHeap, Push) {
     FibonacciHeap<int> heap;
 
     heap.Push(3);
+    EXPECT_EQ(heap.Top(), 3);
+
     heap.Push(1);
+    EXPECT_EQ(heap.Top(), 1);
+
     heap.Push(2);
     EXPECT_EQ(heap.Top(), 1);
 }
@@ -50,6 +54,19 @@ TEST(FibonacciHeap, Pop) {
     heap.Push(2);
     heap.Pop();
     EXPECT_EQ(heap.Top(), 2);
+
+    heap.Push(10);
+    heap.Push(9);
+    heap.Push(7);
+    heap.Push(8);
+    heap.Pop();
+    EXPECT_EQ(heap.Top(), 3);
+
+    heap.Push(1);
+    heap.Push(1);
+    heap.Push(1);
+    heap.Pop();
+    EXPECT_EQ(heap.Top(), 1);
 }
 
 TEST(FibonacciHeap, Update) {
@@ -61,8 +78,9 @@ TEST(FibonacciHeap, Update) {
         nodes.push_back(heap.Push(i));
     }
 
+    EXPECT_THROW(heap.Update(nodes[0], 2), std::runtime_error);
+
     heap.Pop();
-    std::cout << reinterpret_cast<void *>(&*nodes[0]) << std::endl;
     heap.Update(nodes[5], 3);
     EXPECT_EQ(heap.Top(), 2);
 
