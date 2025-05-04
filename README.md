@@ -1,5 +1,5 @@
 # Fibonacci Heap
-**Fibonacci heap** is a priority queue data structure. It has a better amortized running time than, for example Binary heap, but due to a very high overhaed it is not used in pratice.
+**Fibonacci heap** is a priority queue data structure. It has a better amortized running time than, for example, Binary heap but due to a very high overhaed it is not used in pratice.
 
 ## ⚡ Performance
 | Operation      | find-min  | delete-min                                | decrease-key                          | insert                                |
