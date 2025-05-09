@@ -20,11 +20,11 @@ class FibonacciHeap {
         std::list<Node> children {};
         bool marked { false };
 
-        Node(NodeIterator parent, T value) : parent(parent), value(value) {
+        Node(NodeIterator parent, const T &value) : parent(parent), value(value) {
         }
 
         template <typename... Args>
-        Node(NodeIterator parent, Args... args) : parent(parent), value(std::forward<Args>(args)...) {
+        Node(NodeIterator parent, Args &&...args) : parent(parent), value(std::forward<Args>(args)...) {
         }
     };
 
@@ -44,8 +44,8 @@ class FibonacciHeap {
         return min->value;
     }
 
-    NodeIterator Push(T &&value) {
-        NodeIterator it = roots.emplace(roots.end(), roots.end(), std::forward<T>(value));
+    NodeIterator Push(const T &value) {
+        NodeIterator it = roots.emplace(roots.end(), roots.end(), value);
         if (min == roots.end() or value < min->value) {
             min = it;
         }
