@@ -15,12 +15,16 @@ class FibonacciHeap {
 
   private:
     struct Node {
-        T value;
         NodeIterator parent;
+        T value;
         std::list<Node> children {};
         bool marked { false };
 
-        Node(T value, NodeIterator parent) : value(value), parent(parent) {
+        Node(NodeIterator parent, T value) : parent(parent), value(value) {
+        }
+
+        template <typename... Args>
+        Node(NodeIterator parent, Args... args) : parent(parent), value(std::forward<Args>(args)...) {
         }
     };
 
@@ -41,8 +45,18 @@ class FibonacciHeap {
     }
 
     NodeIterator Push(T &&value) {
-        NodeIterator it = roots.emplace(roots.end(), std::forward<T>(value), roots.end());
+        NodeIterator it = roots.emplace(roots.end(), roots.end(), std::forward<T>(value));
         if (min == roots.end() or value < min->value) {
+            min = it;
+        }
+
+        return it;
+    }
+
+    template <typename... Args>
+    NodeIterator Emplace(Args &&...args) {
+        NodeIterator it = roots.emplace(roots.end(), roots.end(), std::forward<Args>(args)...);
+        if (min == roots.end() or it->value < min->value) {
             min = it;
         }
 
@@ -54,7 +68,7 @@ class FibonacciHeap {
             throw std::runtime_error("Heap is empty");
         }
 
-        AddChildrenToRootList(min);
+        AddChildrenToRoot(min);
         roots.erase(min);
 
         if (Empty()) {
@@ -74,7 +88,7 @@ class FibonacciHeap {
     }
 
   private:
-    void AddChildrenToRootList(NodeIterator node) {
+    void AddChildrenToRoot(NodeIterator node) {
         for (Node &child : node->children) {
             child.parent = roots.end();
         }

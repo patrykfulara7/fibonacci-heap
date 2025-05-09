@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include <list>
 #include <stdexcept>
+#include <utility>
 
 #include "../FibonacciHeap.hxx"
 
@@ -39,6 +39,19 @@ TEST(FibonacciHeap, Push) {
 
     heap.Push(2);
     EXPECT_EQ(heap.Top(), 1);
+}
+
+TEST(FibonacciHeap, Emplace) {
+    FibonacciHeap<std::pair<int, int>> heap;
+
+    heap.Emplace(3, 1);
+    EXPECT_EQ(heap.Top(), std::pair(3, 1));
+
+    heap.Emplace(1, 1);
+    EXPECT_EQ(heap.Top(), std::pair(1, 1));
+
+    heap.Emplace(1, 2);
+    EXPECT_EQ(heap.Top(), std::pair(1, 1));
 }
 
 TEST(FibonacciHeap, Pop) {
